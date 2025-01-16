@@ -23,6 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_question\question_reference_manager;
 use mod_quiz\quiz_settings;
 use mod_quiz\question\bank\random_question_view;
 
@@ -31,6 +32,7 @@ require_once($CFG->dirroot . '/mod/quiz/locallib.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
 
 $slotid = required_param('slotid', PARAM_INT);
+$bankcmid = required_param('bankcmid', PARAM_INT);
 $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
 // Get the quiz slot.
@@ -56,15 +58,18 @@ $PAGE->add_body_class('limitedwidth');
 $setreference = $DB->get_record('question_set_references',
     ['itemid' => $slot->id, 'component' => 'mod_quiz', 'questionarea' => 'slot']);
 $filterconditions = json_decode($setreference->filtercondition, true);
+$filterconditions = question_reference_manager::convert_legacy_set_reference_filter_condition($filterconditions);
 
 $params = $filterconditions;
 $params['cmid'] = $cm->id;
 $extraparams['view'] = random_question_view::class;
+$extraparams['requirebankswitch'] = false;
+$extraparams['quizcmid'] = $quizobj->get_cm()->id;
 
 // Build required parameters.
 [$contexts, $thispageurl, $cm, $pagevars, $extraparams] = build_required_parameters_for_custom_view($params, $extraparams);
 
-$thiscontext = $quizobj->get_context();
+$thiscontext = context_module::instance($bankcmid);
 $contexts = new core_question\local\bank\question_edit_contexts($thiscontext);
 
 // Create the editing form.

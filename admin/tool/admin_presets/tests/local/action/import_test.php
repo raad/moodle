@@ -27,7 +27,7 @@ use core_adminpresets\manager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \tool_admin_presets\local\action\import
  */
-class import_test extends \advanced_testcase {
+final class import_test extends \advanced_testcase {
 
     /**
      * Test the behaviour of execute() method.
@@ -154,7 +154,7 @@ class import_test extends \advanced_testcase {
                             'activity_modules' => 1,
                         ],
                         'mod' => [
-                            'chat' => 0,
+                            'page' => 0,
                             'data' => 0,
                             'lesson' => 1,
                         ],

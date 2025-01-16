@@ -65,7 +65,6 @@ $string['cannotcreateuploaddir'] = 'Cannot create upload folder. The site admini
 $string['cannotcustomisefiltersblockuser'] = 'You cannot customise filters settings in user or block contexts.';
 $string['cannotdeletebackupids'] = 'Couldn\'t delete previous backup ids';
 $string['cannotdeletecategorycourse'] = 'Course \'{$a}\' failed to be deleted.';
-$string['cannotdeletecategoryquestions'] = 'Could not delete questions from category \'{$a}\'';
 $string['cannotdeletecourse'] = 'You do not have the permission to delete this course';
 $string['cannotdeletecustomfield'] = 'Error deleting custom field data';
 $string['cannotdeletedir'] = 'Cannot delete ({$a})';
@@ -378,7 +377,7 @@ $string['invalidrole'] = 'Invalid role';
 $string['invalidroleid'] = 'Invalid role ID';
 $string['invalidscaleid'] = 'Incorrect scale ID';
 $string['invalidsection'] = 'Course module record contains invalid section';
-$string['invalidsesskey'] = 'Your session has most likely timed out. Please log in again.';
+$string['invalidsesskey'] = 'Your session has most likely timed out. Please check if you are logged in or go back to the previous screen and reload the page.';
 $string['invalidshortname'] = 'Invalid short course name';
 $string['invalidstatedetected'] = 'Something has gone wrong: {$a}. This should never normally happen.';
 $string['invalidsourcefield'] = 'Draft file\'s source field is invalid';
@@ -664,3 +663,6 @@ $string['unknownhelp'] = 'Unknown help section {$a}';
 // Deprecated since Moodle 4.5.
 $string['cannotsetpassword'] = 'Could not set user password!';
 $string['myisamproblem'] = 'Database tables are using MyISAM database engine, it is recommended to use ACID compliant engine with full transaction support such as InnoDB.';
+
+// Deprecated since Moodle 5.0.
+$string['cannotdeletecategoryquestions'] = 'Could not delete questions from category \'{$a}\'';

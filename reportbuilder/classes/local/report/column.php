@@ -18,8 +18,8 @@ declare(strict_types=1);
 
 namespace core_reportbuilder\local\report;
 
-use coding_exception;
-use lang_string;
+use core\exception\coding_exception;
+use core\lang_string;
 use core_reportbuilder\local\helpers\{aggregation, database, join_trait};
 use core_reportbuilder\local\aggregation\base;
 use core_reportbuilder\local\models\column as column_model;
@@ -359,8 +359,7 @@ final class column {
             $field = reset($fieldsalias);
 
             // If aggregating the column, generate SQL from column fields and use it to generate aggregation SQL.
-            $columnfieldsql = $this->aggregation::get_column_field_sql($fieldsaliassql);
-            $aggregationfieldsql = $this->aggregation::get_field_sql($columnfieldsql, $this->get_type());
+            $aggregationfieldsql = $this->get_field_aggregation_sql($fieldsaliassql);
 
             $fields = ["{$aggregationfieldsql} AS {$field['alias']}"];
         } else {
@@ -370,6 +369,22 @@ final class column {
         }
 
         return array_values($fields);
+    }
+
+    /**
+     * Return aggregated field SQL for the column
+     *
+     * @param string[] $sqlfields
+     * @return string
+     * @throws coding_exception
+     */
+    private function get_field_aggregation_sql(array $sqlfields): string {
+        if (empty($this->aggregation)) {
+            throw new coding_exception('Column aggregation is undefined');
+        }
+
+        $columnfieldsql = $this->aggregation::get_column_field_sql($sqlfields);
+        return $this->aggregation::get_field_sql($columnfieldsql, $this->get_type());
     }
 
     /**
@@ -421,12 +436,19 @@ final class column {
     public function get_groupby_sql(): array {
         global $DB;
 
+        $fieldsalias = $this->get_fields_sql_alias();
+
+        // To ensure cross-platform support for column aggregation, where the aggregation should also be grouped, we need
+        // to generate SQL from column fields and use it to generate aggregation SQL.
+        if (!empty($this->aggregation) && $this->aggregation::column_groupby()) {
+            $fieldsaliassql = array_column($fieldsalias, 'sql');
+            return [$this->get_field_aggregation_sql($fieldsaliassql)];
+        }
+
         // Return defined value if it's already been set during column definition.
         if (!empty($this->groupbysql)) {
             return [$this->groupbysql];
         }
-
-        $fieldsalias = $this->get_fields_sql_alias();
 
         // Note that we can reference field aliases in GROUP BY only in MySQL/Postgres.
         $usealias = in_array($DB->get_dbfamily(), ['mysql', 'postgres']);
@@ -578,14 +600,11 @@ final class column {
             }
 
             // Check whether sortfield refers to field SQL.
-            foreach ($fieldsalias as $field) {
-                if (strcasecmp($sortfield, $field['sql']) === 0) {
-                    $sortfield = $field['alias'];
-                    break;
-                }
-            }
-
-            return $sortfield;
+            return str_ireplace(
+                array_column($fieldsalias, 'sql'),
+                array_column($fieldsalias, 'alias'),
+                $sortfield,
+            );
         }, $this->sortfields);
     }
 
@@ -644,12 +663,13 @@ final class column {
      */
     public function format_value(array $row) {
         $values = $this->get_values($row);
-        $value = self::get_default_value($values, $this->get_type());
 
         // If column is being aggregated then defer formatting to them, otherwise loop through all column callbacks.
         if (!empty($this->aggregation)) {
+            $value = self::get_default_value($values, $this->aggregation::get_column_type($this->get_type()));
             $value = $this->aggregation::format_value($value, $values, $this->callbacks, $this->get_type());
         } else {
+            $value = self::get_default_value($values, $this->get_type());
             foreach ($this->callbacks as $callback) {
                 [$callable, $arguments] = $callback;
                 $value = ($callable)($value, (object) $values, $arguments, null);

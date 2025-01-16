@@ -28,7 +28,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \core_adminpresets\manager
  */
-class manager_test extends \advanced_testcase {
+final class manager_test extends \advanced_testcase {
     /**
      * Include required libraries.
      */
@@ -506,7 +506,7 @@ class manager_test extends \advanced_testcase {
                             'activity_modules' => 1,
                         ],
                         'mod' => [
-                            'chat' => 0,
+                            'page' => 0,
                             'data' => 0,
                             'lesson' => 1,
                         ],

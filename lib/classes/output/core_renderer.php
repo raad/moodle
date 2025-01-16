@@ -522,8 +522,9 @@ class core_renderer extends renderer_base {
         $mods = [];
         $activitylist = [];
         foreach ($modules as $module) {
-            // Only add activities the user can access, aren't in stealth mode and have a url (eg. mod_label does not).
-            if (!$module->uservisible || $module->is_stealth() || empty($module->url)) {
+            // Only add activities the user can access, aren't in stealth mode, are of a type that is visible on the course,
+            // and have a url (eg. mod_label does not).
+            if (!$module->uservisible || $module->is_stealth() || empty($module->url) || !$module->is_of_type_that_can_display()) {
                 continue;
             }
             $mods[$module->id] = $module;
@@ -546,8 +547,8 @@ class core_renderer extends renderer_base {
 
         $nummods = count($mods);
 
-        // If there is only one mod then do nothing.
-        if ($nummods == 1) {
+        // If there are only one or fewer mods then do nothing.
+        if ($nummods <= 1) {
             return '';
         }
 
@@ -1531,7 +1532,7 @@ class core_renderer extends renderer_base {
         foreach ($items as $key => $string) {
             $item = html_writer::start_tag('li', ['class' => 'r' . $row]);
             if (!empty($icons[$key])) { // test if the content has an assigned icon
-                $item .= html_writer::tag('div', $icons[$key], ['class' => 'icon column c0']);
+                $item .= html_writer::tag('div', $icons[$key], ['class' => 'column c0 icon-size-3']);
             }
             $item .= html_writer::tag('div', $string, ['class' => 'column c1']);
             $item .= html_writer::end_tag('li');
@@ -2952,12 +2953,26 @@ EOD;
      *
      * @param string $contents The contents of the paragraph
      * @return string the HTML to output.
+     * @deprecated since 5.0. Use visually_hidden_text() instead.
+     * @todo Final deprecation in Moodle 6.0. See MDL-83671.
      */
+    #[\core\attribute\deprecated('core_renderer::visually_hidden_text()', since: '5.0', mdl: 'MDL-81825')]
     public function sr_text(string $contents): string {
+        \core\deprecation::emit_deprecation_if_present([$this, __FUNCTION__]);
+        return $this->visually_hidden_text($contents);
+    }
+
+    /**
+     * Outputs a visually hidden inline text (but accessible to assistive technologies).
+     *
+     * @param string $contents The contents of the paragraph
+     * @return string the HTML to output.
+     */
+    public function visually_hidden_text(string $contents): string {
         return html_writer::tag(
             'span',
             $contents,
-            ['class' => 'sr-only']
+            ['class' => 'visually-hidden']
         ) . ' ';
     }
 
@@ -3488,7 +3503,7 @@ EOD;
         }
 
         // If filtering of the primary custom menu is enabled, apply only the string filters.
-        if (!empty($CFG->navfilter && !empty($CFG->stringfilters))) {
+        if (!empty($CFG->navfilter) && !empty($CFG->stringfilters)) {
             // Apply filters that are enabled for Content and Headings.
             $filtermanager = \filter_manager::instance();
             $custommenuitems = $filtermanager->filter_string($custommenuitems, \context_system::instance());
@@ -3511,7 +3526,7 @@ EOD;
         }
 
         // If filtering of the primary custom menu is enabled, apply only the string filters.
-        if (!empty($CFG->navfilter && !empty($CFG->stringfilters))) {
+        if (!empty($CFG->navfilter) && !empty($CFG->stringfilters)) {
             // Apply filters that are enabled for Content and Headings.
             $filtermanager = \filter_manager::instance();
             $custommenuitems = $filtermanager->filter_string($custommenuitems, \context_system::instance());
@@ -3811,10 +3826,10 @@ EOD;
             'data-droptarget' => '1',
         ];
         if ($this->page->blocks->region_has_content($displayregion, $this)) {
-            $content = html_writer::tag('h2', get_string('blocks'), ['class' => 'sr-only']) .
+            $content = html_writer::tag('h2', get_string('blocks'), ['class' => 'visually-hidden']) .
                 $this->blocks_for_region($displayregion, $fakeblocksonly);
         } else {
-            $content = html_writer::tag('h2', get_string('blocks'), ['class' => 'sr-only']);
+            $content = html_writer::tag('h2', get_string('blocks'), ['class' => 'visually-hidden']);
         }
         return html_writer::tag($tag, $content, $attributes);
     }
@@ -4221,9 +4236,10 @@ EOD;
             }
         }
 
-        // Return the heading wrapped in an sr-only element so it is only visible to screen-readers for nocontextheader layouts.
+        // Return the heading wrapped in an visually-hidden element so it is only visible to screen-readers
+        // for nocontextheader layouts.
         if (!empty($this->page->layout_options['nocontextheader'])) {
-            return html_writer::div($heading, 'sr-only');
+            return html_writer::div($heading, 'visually-hidden');
         }
 
         $contextheader = new context_header($heading, $headinglevel, $imagedata, $userbuttons);
@@ -4537,6 +4553,7 @@ EOD;
      *               will be appended to the end, JS will toggle the rest of the tags
      * @param context $pagecontext specify if needed to overwrite the current page context for the view tag link
      * @param bool $accesshidelabel if true, the label should have class="accesshide" added.
+     * @param bool $displaylink Indicates whether the tag should be displayed as a link.
      * @return string
      */
     public function tag_list(
@@ -4545,9 +4562,10 @@ EOD;
         $classes = '',
         $limit = 10,
         $pagecontext = null,
-        $accesshidelabel = false
+        $accesshidelabel = false,
+        $displaylink = true,
     ) {
-        $list = new taglist($tags, $label, $classes, $limit, $pagecontext, $accesshidelabel);
+        $list = new taglist($tags, $label, $classes, $limit, $pagecontext, $accesshidelabel, $displaylink);
         return $this->render_from_template('core_tag/taglist', $list->export_for_template($this));
     }
 

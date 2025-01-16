@@ -512,7 +512,6 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
      * @return bool|string
      */
     function display_browse_field($recordid, $template) {
-        global $DB;
         $content = $this->get_data_content($recordid);
         if (!$content || !isset($content->content)) {
             return '';
@@ -523,7 +522,8 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
             $options->filter = false;
         }
         $options->para = false;
-        $str = format_text($content->content, $content->content1, $options);
+        $format = !empty($content->content1) && !empty(trim($content->content1)) ? $content->content1 : null;
+        $str = format_text($content->content, $format, $options);
         return $str;
     }
 
@@ -641,7 +641,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
     function image() {
         global $OUTPUT;
 
-        return $OUTPUT->pix_icon('field/' . $this->type, $this->type, 'data');
+        return $OUTPUT->image_icon('icon', $this->type, 'datafield_' . $this->type);
     }
 
     /**
@@ -4121,10 +4121,15 @@ function data_view($data, $course, $cm, $context) {
 }
 
 /**
- * Get icon mapping for font-awesome.
+ * Get the list of deprecated icons.
+ *
+ * @return array with the deprecated key icons.
+ * @todo Final deprecation on Moodle 6.0 MDL-83465.
  */
-function mod_data_get_fontawesome_icon_map() {
+function mod_data_get_deprecated_icons() {
     return [
+        // Deprecated since Moodle 4.6.
+        // See MDL-82313 for refactoring.
         'mod_data:field/checkbox' => 'fa-regular fa-square-check',
         'mod_data:field/date' => 'fa-regular fa-calendar',
         'mod_data:field/file' => 'fa-regular fa-file',

@@ -103,10 +103,7 @@ class system_report_table extends base_report_table {
         }
 
         // If we are aggregating any columns, we should group by the remaining ones.
-        $aggregatedcolumns = array_filter($columns, static function(column $column): bool {
-            return !empty($column->get_aggregation());
-        });
-
+        $aggregatedcolumns = array_filter($columns, fn(column $column): bool => !empty($column->get_aggregation()));
         $hasaggregatedcolumns = !empty($aggregatedcolumns);
         if ($hasaggregatedcolumns) {
             $groupby = $fields;
@@ -132,7 +129,8 @@ class system_report_table extends base_report_table {
             }
 
             // We need to determine for each column whether we should group by its fields, to support aggregation.
-            if ($hasaggregatedcolumns && empty($column->get_aggregation())) {
+            $columnaggregation = $column->get_aggregation();
+            if ($hasaggregatedcolumns && (empty($columnaggregation) || $columnaggregation::column_groupby())) {
                 $groupby = array_merge($groupby, $column->get_groupby_sql());
             }
 
@@ -153,7 +151,7 @@ class system_report_table extends base_report_table {
         // If the report has any actions then append appropriate column, note that actions are excluded during download.
         if ($this->report->has_actions() && !$this->is_downloading()) {
             $columnheaders['actions'] = html_writer::tag('span', get_string('actions', 'core_reportbuilder'), [
-                'class' => 'sr-only',
+                'class' => 'visually-hidden',
             ]);
             $this->no_sorting('actions');
         }

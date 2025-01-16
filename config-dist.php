@@ -790,6 +790,15 @@ $CFG->admin = 'admin';
 // If no value is set, then it will default to 5 seconds.
 //
 // $CFG->progresspollinterval = 5;
+//
+// Default question bank module
+//
+// $CFG->corequestion_defaultqbankmod = 'qbank'
+//
+// Question banks are only stored at activity module context and this setting defines which module type will
+// be used for creating question banks by default. This is in circumstances such as quiz backup & restores when
+// no target context can be found and the system needs to create a question bank to store the categories and questions.
+
 
 //=========================================================================
 // 7. SETTINGS FOR DEVELOPMENT SERVERS - not intended for production use!!!
@@ -889,6 +898,15 @@ $CFG->admin = 'admin';
 //
 // Force result of checks used to determine whether a site is considered "public" or not (such as for site registration).
 // $CFG->site_is_public = false;
+//
+// The mod_subsection feature has been added in 4.5 but is disabled by default. For new 5.0 sites, however, it will be enabled
+// by default. When upgrading from an earlier version to 5.0 or later, mod_subsection will also be enabled unless the
+// 'keepsubsectiondisabled' setting is set to true. In that case, the status of mod_subsection will remain unchanged during the
+// upgrade process.
+// This setting applies only to upgrades from version 4.5 where subsections already exist. It does not affect other upgrades or
+// new installations.
+// Note that the 'keepsubsectiondisabled' setting will be removed in version 6.0. (MDL-83791)
+// $CFG->keepsubsectiondisabled = false;
 //
 //=========================================================================
 // 8. FORCED SETTINGS

@@ -25,7 +25,7 @@ namespace core_adminpresets;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversDefaultClass \core_adminpresets\helper
  */
-class helper_test extends \advanced_testcase {
+final class helper_test extends \advanced_testcase {
 
     /**
      * Test the behaviour of create_preset() method.
@@ -331,7 +331,7 @@ class helper_test extends \advanced_testcase {
                 ],
                 'plugins' => [
                     'assign' => 1,
-                    'chat' => 0,
+                    'wiki' => 0,
                     'data' => 0,
                     'lesson' => 0,
                 ],
@@ -371,7 +371,7 @@ class helper_test extends \advanced_testcase {
                 ],
                 'plugins' => [
                     'assign' => 1,
-                    'chat' => 0,
+                    'page' => 0,
                     'data' => 0,
                     'lesson' => 1,
                 ],
